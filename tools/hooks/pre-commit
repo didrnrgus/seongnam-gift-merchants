@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# 커밋할 때마다 version.json 의 빌드 번호를 1 올리고 스테이징에 포함시킵니다.
+# 페이지 제목 옆에 표시되는 "v숫자" 가 이 값입니다.
+#
+# 설치: git config core.hooksPath tools/hooks
+#       (tools/install-hooks.ps1 를 실행해도 됩니다)
+#
+# pre-push 가 아니라 pre-commit 인 이유: git 은 push 할 ref 를 pre-push 실행 전에
+# 이미 확정하므로, pre-push 안에서 커밋을 만들어도 이번 push 에는 포함되지 않습니다.
+# 매 커밋마다 올리면 push 에는 항상 최신 번호가 실립니다.
+
+set -e
+
+file="version.json"
+[ -f "$file" ] || exit 0
+
+build=$(sed -n 's/.*"build"[[:space:]]*:[[:space:]]*\([0-9][0-9]*\).*/\1/p' "$file" | head -1)
+
+# 파일이 깨져 숫자를 못 읽으면 커밋을 막지 않고 그냥 넘어갑니다.
+if [ -z "$build" ]; then
+  echo "pre-commit: $file 에서 build 번호를 읽지 못해 버전 증가를 건너뜁니다." >&2
+  exit 0
+fi
+
+build=$((build + 1))
+
+printf '{\n  "build": %s,\n  "date": "%s"\n}\n' "$build" "$(date +%Y-%m-%d)" > "$file"
+git add "$file"
+
+echo "pre-commit: 빌드 번호를 $build 로 올렸습니다."

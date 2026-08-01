@@ -52,6 +52,7 @@ const el = {
   tel: $('lnkTel'),
   links: $('mapLinks'),
   hint: $('mapHint'),
+  version: $('appVersion'),
 };
 
 // 모바일에서는 하단 상세 패널(지도 임베드 포함)을 쓰지 않습니다.
@@ -93,6 +94,27 @@ async function load() {
   fillSelect(el.gu, data.gu);
 
   el.meta.textContent = `전체 ${data.rows.length.toLocaleString('ko-KR')}개 가맹점 · 출처 ${data.source ?? '성남시 공개자료'}`;
+}
+
+/**
+ * 제목 옆 빌드 번호. version.json 은 커밋마다 pre-commit 훅이 올려줍니다.
+ * 표시용일 뿐이라 실패해도 페이지 동작에는 영향이 없어 조용히 넘어갑니다.
+ * 배포 직후 옛 번호가 보이지 않도록 캐시를 우회해서 받습니다.
+ */
+async function loadVersion() {
+  try {
+    const res = await fetch('version.json', { cache: 'no-cache' });
+    if (!res.ok) return;
+
+    const v = await res.json();
+    if (typeof v.build !== 'number') return;
+
+    el.version.textContent = `v${v.build}`;
+    el.version.title = `빌드 ${v.build}${v.date ? ` · ${v.date}` : ''}`;
+    el.version.hidden = false;
+  } catch {
+    /* 버전 표시는 부가 정보이므로 무시합니다. */
+  }
 }
 
 function fillSelect(select, values) {
@@ -375,6 +397,9 @@ function wire() {
 }
 
 // --------------------------------------------------------------------- 시작
+
+// 버전 표시는 데이터 적재와 독립적으로 진행합니다.
+loadVersion();
 
 load()
   .then(() => {

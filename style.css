@@ -61,6 +61,18 @@ main {
   letter-spacing: -0.01em;
 }
 
+.ver {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: 3px; /* 큰 제목 글자의 베이스라인보다 살짝 위로 띄웁니다. */
+  white-space: nowrap;
+}
+
 .topbar .meta {
   max-width: 960px;
   margin: 4px auto 0;

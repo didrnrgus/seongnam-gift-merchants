@@ -13,11 +13,14 @@
 ## 구조
 
 ```
-index.html            페이지 마크업
-style.css             스타일 (라이트/다크 자동)
-app.js                필터 · 목록 · 지도 로직 (의존성 없음, ES 모듈)
-data/merchants.json   변환된 가맹점 데이터
-tools/convert-csv.ps1 원본 CSV → merchants.json 변환기
+index.html              페이지 마크업
+style.css               스타일 (라이트/다크 자동)
+app.js                  필터 · 목록 · 지도 로직 (의존성 없음, ES 모듈)
+version.json            빌드 번호 (커밋마다 자동 증가)
+data/merchants.json     변환된 가맹점 데이터
+tools/convert-csv.ps1   원본 CSV → merchants.json 변환기
+tools/install-hooks.ps1 git 훅 활성화
+tools/hooks/pre-commit  빌드 번호 증가 훅
 ```
 
 빌드 스텝이 없습니다. 파일을 그대로 서빙하면 동작합니다.
@@ -51,6 +54,27 @@ tools/convert-csv.ps1 원본 CSV → merchants.json 변환기
   Maps JS API v3 를 쓰는 방법뿐입니다.
 - **카카오맵은** 프레임 차단 헤더가 없어 임베드 자체는 되지만 공식 지원이 아니고,
   검색 UI 가 통째로 들어와 좁은 영역에서 쓰기 불편합니다.
+
+## 버전 표시
+
+페이지 제목 옆에 `v12` 같은 빌드 번호가 붙습니다. 값은 [`version.json`](version.json) 에 있고,
+**커밋할 때마다 `tools/hooks/pre-commit` 훅이 1씩 올려 커밋에 포함시킵니다.**
+
+훅은 저장소를 클론해도 따라오지 않으므로(`.git/hooks` 는 버전 관리 대상이 아님)
+새 환경에서는 한 번 활성화해야 합니다.
+
+```powershell
+pwsh -File tools/install-hooks.ps1
+```
+
+`core.hooksPath` 를 `tools/hooks` 로 지정하는 게 전부입니다.
+
+`pre-push` 가 아니라 `pre-commit` 인 이유: git 은 push 할 ref 를 `pre-push` 실행 전에
+확정하므로, `pre-push` 안에서 버전을 올려 커밋해도 그 커밋은 이번 push 에 실리지
+않고 다음 push 로 밀립니다. 매 커밋마다 올리면 push 에는 항상 최신 번호가 실립니다.
+
+훅을 건너뛰고 싶으면 `git commit --no-verify`, 수동으로 맞추려면 `version.json` 을
+직접 고치면 됩니다.
 
 ## 데이터 갱신
 
