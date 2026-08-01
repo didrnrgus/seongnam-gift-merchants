@@ -1,9 +1,19 @@
 // 성남사랑상품권 가맹점 찾기
-// 데이터는 data/merchants.json 한 파일이 전부이고, 지도는 API 키 없이 쓸 수 있는
-// 구글맵 임베드(iframe)로 주소를 검색해 띄웁니다.
+// 데이터는 data/merchants.json 한 파일이 전부이고, 지도는 API 키 없이 카카오맵
+// 검색 페이지를 iframe 으로 띄웁니다.
+//
+// 지도 임베드에 대해:
+//   - 네이버지도(map.naver.com)는 X-Frame-Options: DENY 라 iframe 에 넣을 수 없습니다.
+//     모바일(m.map.naver.com)도 SAMEORIGIN 이라 마찬가지입니다. 우회 방법은 없습니다.
+//   - 카카오맵은 프레임 차단 헤더가 없어 임베드가 되지만, 공식 지원 기능은 아닙니다.
+//     카카오가 헤더를 추가하면 지도가 비어 보이게 되므로, 그 아래에 항상
+//     "새 탭에서 열기" 링크를 함께 노출합니다. 막혔을 때는 MAP_EMBED 만 바꾸면 됩니다.
 
 const DATA_URL = 'data/merchants.json';
 const PAGE_SIZE = 60; // 스크롤 한 번에 추가로 그릴 카드 수
+
+/** 상세 패널 iframe 에 넣을 지도 URL 을 만듭니다. 지도 제공처를 바꾸려면 여기만 고치면 됩니다. */
+const MAP_EMBED = (query) => `https://map.kakao.com/?q=${encodeURIComponent(query)}`;
 
 const PAY_PAPER = 1;
 const PAY_MOBILE = 2;
@@ -205,7 +215,7 @@ function select(rowIdx) {
     el.dTel.href = `tel:${tel.replace(/[^0-9+]/g, '')}`;
   }
 
-  el.map.src = `https://www.google.com/maps?q=${encodeURIComponent(query)}&hl=ko&z=17&output=embed`;
+  el.map.src = MAP_EMBED(query);
   el.naver.href = `https://map.naver.com/p/search/${encodeURIComponent(query)}`;
   el.kakao.href = `https://map.kakao.com/?q=${encodeURIComponent(query)}`;
   el.google.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
