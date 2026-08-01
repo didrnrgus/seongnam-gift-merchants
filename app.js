@@ -1,19 +1,23 @@
 // 성남사랑상품권 가맹점 찾기
-// 데이터는 data/merchants.json 한 파일이 전부이고, 지도는 API 키 없이 카카오맵
-// 검색 페이지를 iframe 으로 띄웁니다.
+// 데이터는 data/merchants.json 한 파일이 전부이고, 지도는 API 키 없이 구글맵
+// 임베드(iframe)로 띄웁니다.
 //
 // 지도 임베드에 대해:
 //   - 네이버지도(map.naver.com)는 X-Frame-Options: DENY 라 iframe 에 넣을 수 없습니다.
 //     모바일(m.map.naver.com)도 SAMEORIGIN 이라 마찬가지입니다. 우회 방법은 없습니다.
-//   - 카카오맵은 프레임 차단 헤더가 없어 임베드가 되지만, 공식 지원 기능은 아닙니다.
-//     카카오가 헤더를 추가하면 지도가 비어 보이게 되므로, 그 아래에 항상
-//     "새 탭에서 열기" 링크를 함께 노출합니다. 막혔을 때는 MAP_EMBED 만 바꾸면 됩니다.
+//   - 카카오맵은 프레임 차단 헤더가 없어 임베드 자체는 되지만 공식 지원이 아닙니다.
+//   - 그래서 임베드는 구글맵을 쓰고, 네이버·카카오는 새 탭 링크로 제공합니다.
 
 const DATA_URL = 'data/merchants.json';
 const PAGE_SIZE = 60; // 스크롤 한 번에 추가로 그릴 카드 수
 
-/** 상세 패널 iframe 에 넣을 지도 URL 을 만듭니다. 지도 제공처를 바꾸려면 여기만 고치면 됩니다. */
-const MAP_EMBED = (query) => `https://map.kakao.com/?q=${encodeURIComponent(query)}`;
+// 구글맵 임베드에 "주소 + 상호"를 넣으면 단일 장소로 매칭되지 않는 경우가 많고,
+// 그러면 구글은 지오코딩을 포기하고 핀 없이 대략적인 영역만 보여줍니다.
+// 실측(무작위 20개 표본)에서 주소만 넣으면 20/20 이 좌표로 해석돼 핀이 찍혔고,
+// 주소 + 상호는 12/20 에 그쳤습니다. 그래서 임베드 쿼리는 반드시 주소만 씁니다.
+// (상호는 우리 상세 패널에 이미 크게 적혀 있으니 지도에 중복될 필요가 없습니다.)
+const MAP_EMBED = (address) =>
+  `https://www.google.com/maps?q=${encodeURIComponent(address)}&hl=ko&z=18&output=embed`;
 
 const PAY_PAPER = 1;
 const PAY_MOBILE = 2;
@@ -199,7 +203,8 @@ function select(rowIdx) {
 
   const r = data.rows[rowIdx];
   const addr = r[3];
-  // 지도 검색어에 상호를 함께 넣으면 도로명주소만 넣는 것보다 핀이 정확해집니다.
+  // 새 탭으로 열리는 네이버·카카오·구글 검색에는 상호를 함께 넣어 실제 가게 POI 를
+  // 노리고, 핀이 걸린 임베드에는 주소만 넣습니다 (MAP_EMBED 주석 참고).
   const query = `${addr} ${r[2]}`;
 
   el.dName.textContent = r[2];
@@ -215,7 +220,7 @@ function select(rowIdx) {
     el.dTel.href = `tel:${tel.replace(/[^0-9+]/g, '')}`;
   }
 
-  el.map.src = MAP_EMBED(query);
+  el.map.src = MAP_EMBED(addr);
   el.naver.href = `https://map.naver.com/p/search/${encodeURIComponent(query)}`;
   el.kakao.href = `https://map.kakao.com/?q=${encodeURIComponent(query)}`;
   el.google.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
