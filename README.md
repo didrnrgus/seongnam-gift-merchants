@@ -78,7 +78,9 @@ pwsh -File tools/install-hooks.ps1
 
 ## 데이터 갱신
 
-성남시에서 새 CSV(`가맹점현황_*.csv`)를 받은 뒤:
+원본은 성남시 홈페이지에서 내려받습니다: <https://www.seongnam.go.kr/ec-pm010203>
+
+새 CSV(`가맹점현황_*.csv`)를 받은 뒤:
 
 ```powershell
 pwsh -File tools/convert-csv.ps1 -Csv "C:\경로\가맹점현황_YYYYMMDDHHMMSS.xlsx - Sheet0.csv"

@@ -81,6 +81,21 @@ main {
   overflow-wrap: anywhere; /* 원본 파일명이 길고 공백이 없어 그냥 두면 넘칩니다. */
 }
 
+/* 링크도 같은 회색 톤을 유지하고, 밑줄로만 링크임을 알립니다. */
+.topbar .meta a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.topbar .meta a:hover {
+  color: var(--accent);
+}
+
+.meta__sep {
+  padding: 0 2px;
+}
+
 /* ---------- filters ---------- */
 
 .filters {
