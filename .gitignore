@@ -1,0 +1,7 @@
+# OS / editor
+Thumbs.db
+.DS_Store
+.vscode/
+
+# 원본 CSV 는 저장소에 두지 않습니다 (변환 결과인 data/merchants.json 만 커밋)
+*.csv

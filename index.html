@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>성남사랑상품권 가맹점 찾기</title>
+  <meta name="description" content="성남사랑상품권 가맹점을 품목·상호·결제방법으로 검색하고 지도에서 위치를 확인합니다.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🎫</text></svg>">
+</head>
+
+<body>
+  <header class="topbar">
+    <h1>성남사랑상품권 가맹점 찾기</h1>
+    <p class="meta" id="dataMeta">데이터 불러오는 중…</p>
+  </header>
+
+  <main>
+    <section class="filters" aria-label="검색 필터">
+      <div class="field field--grow">
+        <label for="fName">상호</label>
+        <input type="search" id="fName" placeholder="상호명 일부를 입력" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div class="field">
+        <label for="fCat">품목</label>
+        <select id="fCat">
+          <option value="">전체</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="fGu">구</label>
+        <select id="fGu">
+          <option value="">전체</option>
+        </select>
+      </div>
+
+      <fieldset class="field field--pay">
+        <legend>결제방법</legend>
+        <label class="check"><input type="checkbox" id="fPaper"> 지류</label>
+        <label class="check"><input type="checkbox" id="fMobile"> 모바일</label>
+      </fieldset>
+
+      <button type="button" id="btnReset" class="btn btn--ghost">초기화</button>
+    </section>
+
+    <p class="result-count" id="resultCount" role="status" aria-live="polite"></p>
+
+    <section class="results" aria-label="검색 결과">
+      <ul id="list" class="list"></ul>
+      <p class="empty" id="emptyMsg" hidden>조건에 맞는 가맹점이 없습니다.</p>
+      <div id="sentinel" class="sentinel" aria-hidden="true"></div>
+    </section>
+
+    <section class="detail" id="detail" hidden aria-label="선택한 가맹점">
+      <div class="detail__head">
+        <div>
+          <h2 id="dName"></h2>
+          <p id="dAddr" class="detail__addr"></p>
+          <p class="detail__tags">
+            <span class="tag" id="dCat"></span>
+            <span class="tag" id="dGu"></span>
+            <span class="tag" id="dPay"></span>
+            <a class="tag tag--link" id="dTel" hidden></a>
+          </p>
+        </div>
+        <button type="button" id="btnClose" class="btn btn--ghost" aria-label="선택 해제">닫기</button>
+      </div>
+
+      <div class="detail__map">
+        <iframe id="mapFrame" title="선택한 가맹점 위치 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen></iframe>
+      </div>
+
+      <div class="detail__links">
+        <a id="lnkNaver" class="btn" target="_blank" rel="noopener">네이버지도에서 열기</a>
+        <a id="lnkKakao" class="btn" target="_blank" rel="noopener">카카오맵에서 열기</a>
+        <a id="lnkGoogle" class="btn" target="_blank" rel="noopener">구글지도에서 열기</a>
+        <button type="button" id="btnCopy" class="btn btn--ghost">주소 복사</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>출처: 성남시 성남사랑상품권 가맹점 현황 공개자료. 실제 사용 가능 여부는 매장에 확인하세요.</p>
+  </footer>
+
+  <script src="app.js" type="module"></script>
+</body>
+
+</html>
