@@ -66,6 +66,7 @@ main {
   margin: 4px auto 0;
   font-size: 13px;
   color: var(--muted);
+  overflow-wrap: anywhere; /* 원본 파일명이 길고 공백이 없어 그냥 두면 넘칩니다. */
 }
 
 /* ---------- filters ---------- */
@@ -110,6 +111,10 @@ main {
   border-radius: 8px;
   padding: 8px 10px;
   min-height: 38px;
+  /* select 는 가장 긴 옵션("스포츠및여가관련서비스업")만큼 고유 너비를 갖습니다.
+     이걸 풀어주지 않으면 좁은 화면에서 필터 행이 뷰포트를 넘겨 가로 스크롤이 생깁니다. */
+  width: 100%;
+  min-width: 0;
 }
 
 .field input[type="search"]:focus-visible,
@@ -243,6 +248,8 @@ main {
   border-radius: var(--radius);
   box-shadow: 0 -4px 16px rgb(16 24 40 / 10%);
   padding: 14px;
+  max-height: 82vh;
+  overflow-y: auto;
 }
 
 .detail__head {
@@ -294,7 +301,8 @@ main {
 .detail__map iframe {
   display: block;
   width: 100%;
-  height: 380px;
+  /* 화면이 낮은 노트북에서 sticky 패널이 목록을 다 덮지 않도록 뷰포트에 맞춰 줄입니다. */
+  height: clamp(180px, 32vh, 360px);
   border: 0;
 }
 
@@ -309,6 +317,22 @@ main {
   margin: 8px 0 0;
   font-size: 12px;
   color: var(--muted);
+}
+
+/* 전화걸기는 모바일에서만 노출합니다. 데스크톱 상세 패널에는 이미 ☎ 태그가 있습니다. */
+.btn--tel {
+  display: none;
+}
+
+/* ---------- 선택한 카드 안으로 옮겨진 버튼 블록 (모바일) ---------- */
+
+/* app.js 가 .detail__links 를 선택한 카드의 <li> 안으로 옮깁니다. */
+.list .detail__links {
+  margin: 6px 0 4px;
+  padding: 11px 12px;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
 }
 
 /* ---------- footer ---------- */
@@ -327,11 +351,41 @@ main {
 }
 
 @media (max-width: 600px) {
+  /* 모바일에서는 하단 상세 패널을 아예 쓰지 않습니다. 선택 시 카드 안에
+     버튼 블록이 붙습니다 (app.js 의 layoutSelection 참고). */
   .detail {
-    position: static;
+    display: none;
   }
 
-  .detail__map iframe {
-    height: 300px;
+  /* flex 아이템의 기본 min-width:auto 는 select 의 min-content 너비를 그대로
+     반영합니다. 0 으로 눌러야 좁은 화면에서 품목·구를 한 줄에 나란히 놓을 수 있습니다. */
+  .field {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+  }
+
+  /* 상호 검색과 결제방법은 한 줄을 다 씁니다. */
+  .field--grow,
+  .field--pay {
+    flex: 1 1 100%;
+  }
+
+  .filters>.btn {
+    flex: 1 1 100%;
+  }
+
+  .btn--tel {
+    display: inline-flex;
+  }
+
+  /* 전화번호가 없는 가맹점에서는 위 규칙이 [hidden] 을 덮지 않도록 막습니다. */
+  .btn--tel[hidden] {
+    display: none;
+  }
+
+  /* 손가락으로 누를 만한 크기로 키우고, 한 줄에 두 개씩 깔립니다. */
+  .detail__links .btn {
+    flex: 1 1 calc(50% - 4px);
+    min-height: 44px;
   }
 }

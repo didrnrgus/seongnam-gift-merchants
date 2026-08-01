@@ -49,7 +49,16 @@ const el = {
   naver: $('lnkNaver'),
   kakao: $('lnkKakao'),
   google: $('lnkGoogle'),
+  tel: $('lnkTel'),
+  links: $('mapLinks'),
+  hint: $('mapHint'),
 };
+
+// 모바일에서는 하단 상세 패널(지도 임베드 포함)을 쓰지 않습니다.
+// 목록이 길어서 패널이 카드 수천 픽셀 아래로 밀려 사실상 보이지 않고,
+// 좁은 화면에서 지도 iframe 은 데이터만 축내기 때문입니다.
+// 대신 선택한 카드 안에 지도앱 버튼만 붙입니다. 기준은 style.css 의 브레이크포인트와 동일.
+const MOBILE = window.matchMedia('(max-width: 600px)');
 
 /** @type {{cat: string[], gu: string[], rows: any[][]}} */
 let data = { cat: [], gu: [], rows: [] };
@@ -186,6 +195,10 @@ function makeCard(rowIdx) {
 
   btn.append(name, addr, tags);
   li.appendChild(btn);
+
+  // 필터 변경 등으로 목록을 다시 그릴 때, 선택된 카드에는 버튼 블록을 되붙입니다.
+  if (MOBILE.matches && rowIdx === selected) li.appendChild(el.links);
+
   return li;
 }
 
@@ -214,19 +227,51 @@ function select(rowIdx) {
   el.dPay.textContent = payLabel(r[5]);
 
   const tel = r[4];
+  const telHref = tel ? `tel:${tel.replace(/[^0-9+]/g, '')}` : '';
   el.dTel.hidden = !tel;
+  el.tel.hidden = !tel;
   if (tel) {
     el.dTel.textContent = `☎ ${tel}`;
-    el.dTel.href = `tel:${tel.replace(/[^0-9+]/g, '')}`;
+    el.dTel.href = telHref;
+    el.tel.href = telHref;
   }
 
-  el.map.src = MAP_EMBED(addr);
   el.naver.href = `https://map.naver.com/p/search/${encodeURIComponent(query)}`;
   el.kakao.href = `https://map.kakao.com/?q=${encodeURIComponent(query)}`;
   el.google.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
-  el.detail.hidden = false;
+  layoutSelection({ scroll: true });
   syncUrl();
+}
+
+/**
+ * 선택 상태를 화면 폭에 맞게 배치합니다.
+ * 데스크톱은 하단 sticky 상세 패널 + 지도 임베드, 모바일은 선택한 카드 안의 버튼 블록.
+ * 지도 앱 링크(el.links)는 하나뿐이고 두 위치 사이를 오갑니다.
+ */
+function layoutSelection({ scroll = false } = {}) {
+  if (selected === -1) {
+    el.detail.hidden = true;
+    el.map.removeAttribute('src'); // 숨긴 iframe 이 계속 살아있지 않도록 비웁니다.
+    el.detail.insertBefore(el.links, el.hint);
+    return;
+  }
+
+  if (MOBILE.matches) {
+    el.detail.hidden = true;
+    el.map.removeAttribute('src'); // 모바일에서는 지도 임베드를 아예 받지 않습니다.
+
+    const card = el.list.querySelector(`.card[data-row="${selected}"]`);
+    if (card) {
+      card.parentElement.appendChild(el.links);
+      if (scroll) el.links.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+    return;
+  }
+
+  el.detail.insertBefore(el.links, el.hint);
+  el.detail.hidden = false;
+  el.map.src = MAP_EMBED(data.rows[selected][3]);
 }
 
 function clearSelection() {
@@ -234,8 +279,7 @@ function clearSelection() {
   if (prev) prev.setAttribute('aria-pressed', 'false');
 
   selected = -1;
-  el.detail.hidden = true;
-  el.map.removeAttribute('src'); // 숨긴 iframe 이 계속 살아있지 않도록 비웁니다.
+  layoutSelection();
   syncUrl();
 }
 
@@ -299,8 +343,16 @@ function wire() {
 
   el.list.addEventListener('click', (e) => {
     const card = e.target.closest('.card');
-    if (card) select(Number(card.dataset.row));
+    if (!card) return;
+
+    // 모바일에는 "닫기" 버튼이 없으므로 같은 카드를 다시 누르면 접힙니다.
+    const row = Number(card.dataset.row);
+    if (row === selected) clearSelection();
+    else select(row);
   });
+
+  // 가로/세로 전환이나 창 크기 변경으로 모드가 바뀌면 선택 표시를 다시 배치합니다.
+  MOBILE.addEventListener('change', () => layoutSelection());
 
   el.close.addEventListener('click', clearSelection);
 
